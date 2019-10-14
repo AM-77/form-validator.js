@@ -1,8 +1,9 @@
 "use strict"
 
 export default class Form_validator {
-    validate = (input, types, option_rules, compare_with = undefined, required = true) => {
+    validate = (input, types, option_rules, required = false) => {
 
+        // Default rules options
         let default_rules = {
             min_lenght: 0,
             max_length: 256,
@@ -14,33 +15,56 @@ export default class Form_validator {
             },
             "date": {
                 "format": "yyyy-mm-dd",
-                "after": "1900-01-01",
-                "before": "2100-01-01"
-            }
+                "after": true,
+                "before": true
+            },
+            "compare_with": undefined
         }
 
+        // Overriding the default rules
         let rules = {}
-        rules.password = this.extend(default_rules.password, option_rules.password)
-        rules.date = this.extend(default_rules.date, option_rules.date)
-        rules = this.extend(default_rules, rules)
-
-        let valid_password = true,
-            valid_length = true
-
+        rules.password = this.extend_options(default_rules.password, option_rules.password)
+        rules.date = this.extend_options(default_rules.date, option_rules.date)
+        rules = this.extend_options(default_rules, rules)
+        
+        // Init vars
         let response = {
-            valid: true,
-            validated: {}
+                valid: true,
+                validated: {}
+            },
+            value = input.value,
+            valid_date = true,
+            valid_password = true
+
+        // validating the length
+        let valid_length = this.validate_length(value, rules.min_lenght, rules.max_length)
+        if (!valid_length) {
+            response.validated["length"] = {
+                min_lenght: value.length >= rules.min_lenght,
+                max_length: value.length <= rules.max_length
+            }
+
+            response.valid = response.valid && valid_length
         }
 
-        let value = input.value
+        // validating the matches
+        if (rules.compare_with) {
+            response.validated["compare_with"] = this.validate_compare(value, rules.compare_with)
+            response.valid = response.valid && response.validated["compare_with"]
+        }
 
+        // valitating the required inputs
+        if (required) {
+            response.validated["required"] = value.length > 0
+            response.valid = response.valid && response.validated["required"]
+        }
 
+        // validating the input's value based on it's type
         types.forEach(type => {
 
             switch (type) {
 
                 case "email": {
-
                     if (this.validate_email(value)) {
                         response.validated["email"] = true
                     } else {
@@ -60,7 +84,6 @@ export default class Form_validator {
                 }
 
                 case "alpha_dash": {
-
                     if (this.validate_alpha_dash(value)) {
                         response.validated["alpha_dash"] = true
                     } else {
@@ -70,7 +93,6 @@ export default class Form_validator {
                 }
 
                 case "alpha_numeric": {
-
                     if (this.validate_alpha_numeric(value)) {
                         response.validated["alpha_numeric"] = true
                     } else {
@@ -80,7 +102,6 @@ export default class Form_validator {
                 }
 
                 case "alpha_numeric_dash": {
-
                     if (this.validate_alpha_numeric_dash(value)) {
                         response.validated["alpha_numeric_dash"] = true
                     } else {
@@ -90,7 +111,6 @@ export default class Form_validator {
                 }
 
                 case "integer": {
-
                     if (this.validate_integer(value)) {
                         response.validated["integer"] = true
                     } else {
@@ -100,7 +120,6 @@ export default class Form_validator {
                 }
 
                 case "decimal": {
-
                     if (this.validate_decimal(value)) {
                         response.validated["decimal"] = true
                     } else {
@@ -110,7 +129,6 @@ export default class Form_validator {
                 }
 
                 case "url": {
-
                     if (this.validate_url(value)) {
                         response.validated["url"] = true
                     } else {
@@ -120,7 +138,6 @@ export default class Form_validator {
                 }
 
                 case "credit_card": {
-
                     if (this.validate_credit_card(value)) {
                         response.validated["credit_card"] = true
                     } else {
@@ -130,66 +147,26 @@ export default class Form_validator {
                 }
 
                 case "date": {
-
-                    if (this.validate_date(value)) {
-                        response.validated["date"] = true
-                    } else {
-                        response.validated["date"] = false
-                    }
-
                     let res = this.validate_date(value, rules.date)
                     valid_date = ((res.format || res.format == undefined) && (res.after || res.after == undefined) && (res.before || res.before == undefined))
-                    
-                    if (valid_date) {
-                        response.validated["date"] = res
-                    } else {
-                        response.validated["date"] = res
-                    }
+                    response.validated["date"] = res
                     break
                 }
 
                 case "password": {
-
                     let res = this.validate_password(value, rules.password)
                     valid_password = ((res.contains_lowercase || res.contains_lowercase == undefined) && (res.contains_uppercase || res.contains_uppercase == undefined) && (res.contains_numeric || res.contains_numeric == undefined) && (res.contains_symbols || res.contains_symbols == undefined) )
-                    if (valid_password) {
-                        response.validated["password"] = res
-                    } else {
-                        response.validated["password"] = res
-                    }
-
+                    response.validated["password"] = res
                     break
                 }
             }
 
-        });
+        })
 
-        response.valid = (response.validated["email"] || response.validated["email"] == undefined) && (response.validated["alpha"] || response.validated["alpha"] == undefined) && (response.validated["alpha_dash"] || response.validated["alpha_dash"] == undefined) && (response.validated["alpha_numeric"] || response.validated["alpha_numeric"] == undefined) && (response.validated["alpha_numeric_dash"] || response.validated["alpha_numeric_dash"] == undefined) && (response.validated["integer"] || response.validated["integer"] == undefined) && (response.validated["decimal"] || response.validated["decimal"] == undefined) && (response.validated["url"] || response.validated["url"] == undefined) && (response.validated["date"] || response.validated["date"] == undefined) && (response.validated["credit_card"] || response.validated["credit_card"] == undefined) && (valid_password || response.validated["password"] == undefined)
-
-
-        valid_length = this.validate_length(value, rules.min_lenght, rules.max_length)
-        if (!valid_length) {
-            response.validated["length"] = {
-                min_lenght: value.length >= rules.min_lenght,
-                max_length: value.length <= rules.max_length
-            }
-
-            response.valid = response.valid && valid_length
-        }
-
-        if (compare_with) {
-            response.validated["compare_with"] = this.validate_compare(value, compare_with)
-            response.valid = response.valid && response.validated["compare_with"]
-        }
-
-        if (required) {
-            response.validated["required"] = value.length > 0
-            response.valid = response.valid && response.validated["required"]
-        }
-
+        // Getting the final result for the full validations
+        response.valid = (response.validated["email"] || response.validated["email"] == undefined) && (response.validated["alpha"] || response.validated["alpha"] == undefined) && (response.validated["alpha_dash"] || response.validated["alpha_dash"] == undefined) && (response.validated["alpha_numeric"] || response.validated["alpha_numeric"] == undefined) && (response.validated["alpha_numeric_dash"] || response.validated["alpha_numeric_dash"] == undefined) && (response.validated["integer"] || response.validated["integer"] == undefined) && (response.validated["decimal"] || response.validated["decimal"] == undefined) && (response.validated["url"] || response.validated["url"] == undefined) && (valid_date || response.validated["date"] == undefined) && (response.validated["credit_card"] || response.validated["credit_card"] == undefined) && (valid_password || response.validated["password"] == undefined)
         return response
     }
-
 
     validate_email = (_email) => {
         return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(String(_email).toLowerCase())
@@ -223,12 +200,7 @@ export default class Form_validator {
         return /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/.test(String(_url))
     }
 
-    validate_date = (_date, _date_rules = {
-        "format": "yyyy-mm-dd", 
-        "after": "1900-01-01",
-        "before": "2100-01-01"
-    }) => {
-
+    validate_date = (_date, _date_rules) => {
         let valid_after = true,
             valid_before = true,
             valid_format = true,
@@ -236,9 +208,9 @@ export default class Form_validator {
 
         if(_date_rules.format){
             if (_date_rules.format === "yyyy-mm-dd")
-                valid_format = /\d{4}-\d{1,2}-\d{1,2}/.test(_date)
+                valid_format = /\d{4}-\d{2}-\d{2}/.test(_date)
             else
-                valid_format = /\d{2}-\d{1,2}-\d{1,2}/.test(_date)
+                valid_format = /\d{2}-\d{2}-\d{2}/.test(_date)
             
                 response["format"] = valid_format
         }
@@ -261,13 +233,7 @@ export default class Form_validator {
         return /^(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/.test(String(_credit_card))
     }
 
-    validate_password = (_password, _password_rules = {
-        "lowercase": true,
-        "uppercase": true,
-        "numeric": true,
-        "symboles": true
-    }) => {
-
+    validate_password = (_password, _password_rules) => {
         let contains_lowercase = true,
             contains_uppercase = true,
             contains_numeric = true,
@@ -308,20 +274,22 @@ export default class Form_validator {
         return _value.length >= _min_lenght && _value.length <= _max_length
     }
 
+    extend_options = function (defaults, options) {
+        let extended = {}
+        let prop
 
-    extend = function (defaults, options) {
-        var extended = {};
-        var prop;
         for (prop in defaults) {
             if (Object.prototype.hasOwnProperty.call(defaults, prop)) {
-                extended[prop] = defaults[prop];
+                extended[prop] = defaults[prop]
             }
         }
+
         for (prop in options) {
             if (Object.prototype.hasOwnProperty.call(options, prop)) {
-                extended[prop] = options[prop];
+                extended[prop] = options[prop]
             }
         }
-        return extended;
+
+        return extended
     }
 }
