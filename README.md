@@ -12,7 +12,7 @@ A JavaScript form validation library
 
 ## Download the form-validator.js file
     
-Download the file from github. Use this link: [Form-validator.js]()
+Download the file from github. Use this link: [Form-validator.js](https://raw.githubusercontent.com/AM-77/form-validator.js/master/form-validator.js)
 
 ## Import the Form-validator
 
