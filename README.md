@@ -4,9 +4,9 @@ A JavaScript form validation library
 
 # Features
 
-    - Customisable form fields validation with a dozen rules.
-    - Vanilla Javascript, No dependencies.
-    - Your Own Messages.
+- Customisable form fields validation with a dozen rules.
+- Vanilla Javascript, No dependencies.
+- Your Own Messages.
 
 # How to use
 
@@ -43,7 +43,11 @@ input.addEventListener("keyup", ()=>{
 
 ## Available Methods
 
+<<<<<<< HEAD
     - `validate (input, types, option_rules:optional, required:optional)`
+=======
+- `validate (input, types, option_rules:optional, required:optional)`
+>>>>>>> 3009af55741ce1b4be0440ac15d505473b5b241b
     
 available options for the option_rules parameter : 
 ```javascript
@@ -65,6 +69,7 @@ available_options = {
     }
 ```
 
+<<<<<<< HEAD
     - `validate_email (_email)`
     - `validate_alpha (_alpha)`
     - `validate_alpha_dash (_alpha_dash)`
@@ -78,6 +83,21 @@ available_options = {
     - `validate_password (_password, _password_rules)`
     - `validate_compare (_this, _with)`
     - `validate_length (value, _min_lenght, _max_lenght)`
+=======
+- `validate_email (_email)`
+- `validate_alpha (_alpha)`
+- `validate_alpha_dash (_alpha_dash)`
+- `validate_alpha_numeric (_alpha_numeric)`
+- `validate_alpha_numeric_dash (_alpha_numeric_dash)`
+- `validate_integer (_integer)`
+- `validate_decimal (_decimal)`
+- `validate_url (_url)`
+- `validate_date (_date, _date_rules)`
+- `validate_credit_card (_credit_card)`
+- `validate_password (_password, _password_rules)`
+- `validate_compare (_this, _with)`
+- `validate_length (value, _min_lenght, _max_lenght)`
+>>>>>>> 3009af55741ce1b4be0440ac15d505473b5b241b
 
 ## Documentation
 
